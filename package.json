@@ -1,0 +1,27 @@
+{
+  "name": "handy-config",
+  "version": "1.0.0",
+  "description": "config,handy",
+  "main": "dist/config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "publish": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KotoriK/handy-config.git"
+  },
+  "keywords": [
+    "config"
+  ],
+  "author": "KotoriK",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/KotoriK/handy-config/issues"
+  },
+  "homepage": "https://github.com/KotoriK/handy-config#readme",
+  "devDependencies": {
+    "@types/node": "^14.0.27",
+    "typescript": "^3.9.7"
+  }
+}
