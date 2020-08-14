@@ -23,7 +23,7 @@ async function _loadConfigFile(configPath: string) {
     } else {
         const path = Path.normalize(configPath)
         configType = ConfigType.local
-        return await fs.readFile(path,).then((value) => {
+        return await fs.readFile(path,{flag:'a+'}).then((value) => {
             try {
                 return value.toString()
             } catch (e) {
