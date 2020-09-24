@@ -1,35 +1,16 @@
 import Path from 'path'
-import fs from 'fs/promises'
-export enum ConfigType {
-    notSpecified, online, local,
-}
-const httpReg = /^http(s)?:\/\//
-let globalConfig: Object = {}
-let configType: ConfigType = ConfigType.notSpecified
+import fs from 'fs'
+import { rejects } from 'assert'
 
-async function _loadConfigFile(configPath: string) {
-    const isHTTP = configPath.match(httpReg)//检查链接是否是HTTP链接
-    if (isHTTP) {
-        const path = configPath
-        configType = ConfigType.online
-        return await fetch(path).then((resp) => {
-            if (resp.ok) {
-                return resp.text().then((v) => { return v }
-                )
-            } else {
-                return handleLoadError(new Error(`HTTP ${resp.status}:${resp.statusText}`))
-            }
-        }, (reason) => { return handleLoadError(reason) })
-    } else {
-        const path = Path.normalize(configPath)
-        configType = ConfigType.local
-        return await fs.readFile(path,{flag:'a+'}).then((value) => {
-            try {
-                return value.toString()
-            } catch (e) {
-                return handleLoadError(e)
-            }
-        }, (reason) => { return handleLoadError(reason) })
+let globalConfig: Object = {}
+
+function _loadConfigFile(configPath: string) {
+    const path = Path.normalize(configPath)
+    const buf = fs.readFileSync(path, { flag: 'a+' })
+    try {
+        return buf.toString()
+    } catch (e) {
+        return handleLoadError(e)
     }
 }
 function handleLoadError(e) {
@@ -49,32 +30,37 @@ function handleLoadError(e) {
  * @param configPath
  * @returns
  */
-export async function loadConfig(configPath: string) {
-    globalConfig = JSON.parse(await _loadConfigFile(configPath))
+export function loadConfig(configPath: string) {
+    globalConfig = JSON.parse(_loadConfigFile(configPath))
     return globalConfig
 }
+
 /**
  * 保存设置到原来的位置
  *
  * @author KotoriK
  * @export
  * @param configPath
- * @returns
+ * @returns 
  */
-export async function saveConfig(configPath: string) {
-    if (configType == ConfigType.local) {
-        const oldConfig = await _loadConfigFile(configPath)
+export function saveConfig(configPath: string) {
+    return new Promise<true>((resolve, reject) => {
+        const oldConfig = _loadConfigFile(configPath)
         const newConfig = JSON.stringify(globalConfig)
         if (oldConfig == newConfig) {
             console.log('Config Save skipped because nothing change.')
+            resolve(true)
             return
         }
-        return await fs.writeFile(configPath, newConfig, { encoding: 'utf-8' })
-    } else {
-        if (process.env.NODE_ENV !== "production") {
-            console.log('Cant save config. Because' + ConfigType[configType])
+        try {
+            fs.writeFile(configPath, newConfig, { encoding: 'utf-8' }, () => {
+                resolve(true)
+                console.log('Save complete')
+            })
+        } catch (e) {
+            reject(e)
         }
-    }
+    })
 }
 /**
  * 分模块读取配置文件，若通过label找不到配置，则返回传入的默认值
@@ -96,12 +82,15 @@ export function useConfig<T>(label: string, defaultConfig: T): T {
  *
  * @author KotoriK
  * @export
- * @param label
- * @param newConfig
+ * @param label 配置标签
+ * @param newConfig 设置项的新值
  * @returns
  */
 export function setConfig(label: string, newConfig: Object) {
     return Object.assign(globalConfig[label], newConfig)
+}
+export function deleteConfig(label: string) {
+    delete globalConfig[label]
 }
 
 /**
@@ -111,6 +100,6 @@ export function setConfig(label: string, newConfig: Object) {
  * @export
  * @returns
  */
-export function getGlobalConfig(){
-    return {...globalConfig}
+export function getGlobalConfig() {
+    return { ...globalConfig }
 }
