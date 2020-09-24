@@ -1,6 +1,5 @@
 import Path from 'path'
 import fs from 'fs'
-import { rejects } from 'assert'
 
 let globalConfig: Object = {}
 
