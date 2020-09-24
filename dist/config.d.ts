@@ -1,8 +1,3 @@
-export declare enum ConfigType {
-    notSpecified = 0,
-    online = 1,
-    local = 2
-}
 /**
  * 从指定路径加载配置文件
  *
@@ -11,7 +6,7 @@ export declare enum ConfigType {
  * @param configPath
  * @returns
  */
-export declare function loadConfig(configPath: string): Promise<Object>;
+export declare function loadConfig(configPath: string): Object;
 /**
  * 保存设置到原来的位置
  *
@@ -20,7 +15,7 @@ export declare function loadConfig(configPath: string): Promise<Object>;
  * @param configPath
  * @returns
  */
-export declare function saveConfig(configPath: string): Promise<void>;
+export declare function saveConfig(configPath: string): Promise<true>;
 /**
  * 分模块读取配置文件，若通过label找不到配置，则返回传入的默认值
  *
@@ -37,11 +32,12 @@ export declare function useConfig<T>(label: string, defaultConfig: T): T;
  *
  * @author KotoriK
  * @export
- * @param label
- * @param newConfig
+ * @param label 配置标签
+ * @param newConfig 设置项的新值
  * @returns
  */
 export declare function setConfig(label: string, newConfig: Object): any;
+export declare function deleteConfig(label: string): void;
 /**
  * 获取一份当前配置的复制
  *
