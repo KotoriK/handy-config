@@ -8,14 +8,14 @@
  */
 export declare function loadConfig(configPath: string): Object;
 /**
- * 保存设置到原来的位置
+ * 保存设置到指定的位置
  *
  * @author KotoriK
  * @export
- * @param configPath
+ * @param configPath 可选，默认为loadConfig的文件位置
  * @returns
  */
-export declare function saveConfig(configPath: string): Promise<true>;
+export declare function saveConfig(configPath?: string): Promise<true>;
 /**
  * 分模块读取配置文件，若通过label找不到配置，则返回传入的默认值
  *
@@ -54,4 +54,5 @@ export declare function getGlobalConfig(): {
     isPrototypeOf(v: Object): boolean;
     propertyIsEnumerable(v: string | number | symbol): boolean;
 };
+export declare function setBehaviour(tag: 'autosave', value: boolean): void;
 //# sourceMappingURL=config.d.ts.map
