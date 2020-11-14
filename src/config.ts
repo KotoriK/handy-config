@@ -2,9 +2,10 @@ import Path from 'path'
 import fs from 'fs'
 
 let globalConfig: Object = {}
-
+let BEHAVIOUR_AUTOSAVE = true
+let CONFIG_PATH = ''
 function _loadConfigFile(configPath: string) {
-    const path = Path.normalize(configPath)
+    const path = Path.resolve(configPath)
     const buf = fs.readFileSync(path, { flag: 'a+' })
     try {
         return buf.toString()
@@ -30,21 +31,22 @@ function handleLoadError(e) {
  * @returns
  */
 export function loadConfig(configPath: string) {
+    CONFIG_PATH = configPath
     globalConfig = JSON.parse(_loadConfigFile(configPath))
     return globalConfig
 }
-
 /**
- * 保存设置到原来的位置
+ * 保存设置到指定的位置
  *
  * @author KotoriK
  * @export
- * @param configPath
+ * @param configPath 可选，默认为loadConfig的文件位置
  * @returns 
  */
-export function saveConfig(configPath: string) {
+export function saveConfig(configPath?: string) {
+    const path = configPath ?? CONFIG_PATH
     return new Promise<true>((resolve, reject) => {
-        const oldConfig = _loadConfigFile(configPath)
+        const oldConfig = _loadConfigFile(path)
         const newConfig = JSON.stringify(globalConfig)
         if (oldConfig == newConfig) {
             console.log('Config Save skipped because nothing change.')
@@ -52,7 +54,7 @@ export function saveConfig(configPath: string) {
             return
         }
         try {
-            fs.writeFile(configPath, newConfig, { encoding: 'utf-8' }, () => {
+            fs.writeFile(path, newConfig, { encoding: 'utf-8' }, () => {
                 resolve(true)
                 console.log('Save complete')
             })
@@ -73,6 +75,7 @@ export function saveConfig(configPath: string) {
  */
 export function useConfig<T>(label: string, defaultConfig: T): T {
     if (!globalConfig[label]) globalConfig[label] = defaultConfig
+    if (BEHAVIOUR_AUTOSAVE) saveConfig()
     return globalConfig[label]
 }
 
@@ -86,10 +89,17 @@ export function useConfig<T>(label: string, defaultConfig: T): T {
  * @returns
  */
 export function setConfig(label: string, newConfig: Object) {
-    return Object.assign(globalConfig[label], newConfig)
+    const result = Object.assign(globalConfig[label], newConfig)
+    if (BEHAVIOUR_AUTOSAVE) {
+        saveConfig()
+    }
+    return result
 }
 export function deleteConfig(label: string) {
     delete globalConfig[label]
+    if (BEHAVIOUR_AUTOSAVE) {
+        saveConfig()
+    }
 }
 
 /**
@@ -101,4 +111,13 @@ export function deleteConfig(label: string) {
  */
 export function getGlobalConfig() {
     return { ...globalConfig }
+}
+export function setBehaviour(tag: 'autosave', value: boolean) {
+    switch (tag) {
+        case 'autosave':
+            BEHAVIOUR_AUTOSAVE = value
+            break
+        default:
+            throw new Error('Behaviour not found')
+    }
 }
