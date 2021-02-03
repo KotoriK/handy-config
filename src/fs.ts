@@ -1,6 +1,6 @@
 import { readFileSync, writeFile } from 'fs'
 import { resolve } from 'path'
-import { getGlobalConfig, loadConfig, offConfigChanged, onConfigChanged } from './config'
+import { getDefaultConfig, getGlobalConfig, loadConfig, offConfigChanged, onConfigChanged } from './config'
 
 let CONFIG_PATH = ''
 
@@ -35,6 +35,17 @@ export function loadConfigFromFile(configPath: string) {
     const newConfig = JSON.parse(_loadConfigFile(configPath))
     loadConfig(newConfig)
 }
+const _save = (path: string, content: string) =>
+    new Promise<true>((resolve, reject) => {
+        try {
+            writeFile(path, content, { encoding: 'utf-8' }, () => {
+                resolve(true)
+                console.log('Save complete')
+            })
+        } catch (e) {
+            reject(e)
+        }
+    })
 
 /**
  * 保存设置到指定的位置
@@ -46,23 +57,21 @@ export function loadConfigFromFile(configPath: string) {
  */
 export function saveConfigToFile(configPath?: string) {
     const path = configPath ?? CONFIG_PATH
-    return new Promise<true>((resolve, reject) => {
+    return new Promise<true>((resolve,reject) => {
         const oldConfig = _loadConfigFile(path)
         const newConfig = JSON.stringify(getGlobalConfig())
         if (oldConfig == newConfig) {
             console.log('Config Save skipped because nothing change.')
             resolve(true)
-            return
-        }
-        try {
-            writeFile(path, newConfig, { encoding: 'utf-8' }, () => {
-                resolve(true)
-                console.log('Save complete')
-            })
-        } catch (e) {
-            reject(e)
+        }else{
+            _save(path,newConfig).then(resolve,reject)
         }
     })
+}
+export function saveDefaultConfigToFile(configPath?: string) {
+    const path = configPath ?? CONFIG_PATH
+    return _save(path,JSON.stringify(getDefaultConfig()))
+
 }
 export function setBehaviour(tag: 'autosave', value: boolean) {
     switch (tag) {

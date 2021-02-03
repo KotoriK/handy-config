@@ -1,4 +1,5 @@
-let globalConfig: Object = {}
+let Global_Config: Object = {}
+let Default_Config = {}
 const mapListenerAfterChange = new Map<Function, Function>()
 export function onConfigChanged(listener: () => void) {
     mapListenerAfterChange.set(listener, listener)
@@ -23,9 +24,12 @@ function emitConfigChanged() {
  * @returns
  */
 export function useConfig<T>(label: string, defaultConfig: T): T {
-    if (!globalConfig[label]) globalConfig[label] = defaultConfig
-    emitConfigChanged()
-    return globalConfig[label]
+    Default_Config[label] = defaultConfig
+    if (!Global_Config[label]) {
+        Global_Config[label] = defaultConfig
+        emitConfigChanged()
+    }
+    return Global_Config[label]
 }
 
 /**
@@ -38,16 +42,16 @@ export function useConfig<T>(label: string, defaultConfig: T): T {
  * @returns
  */
 export function setConfig(label: string, newConfig: Object) {
-    const result = Object.assign(globalConfig[label], newConfig)
+    const result = Object.assign(Global_Config[label], newConfig)
     emitConfigChanged()
     return result
 }
 export function deleteConfig(label: string) {
-    delete globalConfig[label]
+    delete Global_Config[label]
     emitConfigChanged()
 }
 export function loadConfig(config: Object) {
-    globalConfig = config
+    Global_Config = config
 }
 
 /**
@@ -58,5 +62,6 @@ export function loadConfig(config: Object) {
  * @returns
  */
 export function getGlobalConfig() {
-    return { ...globalConfig }
+    return { ...Global_Config }
 }
+export const getDefaultConfig = (label?: string) => label ? { ...Default_Config[label] } : { ...Default_Config }
