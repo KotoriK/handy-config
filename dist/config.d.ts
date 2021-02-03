@@ -1,21 +1,5 @@
-/**
- * 从指定路径加载配置文件
- *
- * @author KotoriK
- * @export
- * @param configPath
- * @returns
- */
-export declare function loadConfig(configPath: string): Object;
-/**
- * 保存设置到指定的位置
- *
- * @author KotoriK
- * @export
- * @param configPath 可选，默认为loadConfig的文件位置
- * @returns
- */
-export declare function saveConfig(configPath?: string): Promise<true>;
+export declare function onConfigChanged(listener: () => void): void;
+export declare function offConfigChanged(listener: () => void): void;
 /**
  * 分模块读取配置文件，若通过label找不到配置，则返回传入的默认值
  *
@@ -38,6 +22,7 @@ export declare function useConfig<T>(label: string, defaultConfig: T): T;
  */
 export declare function setConfig(label: string, newConfig: Object): any;
 export declare function deleteConfig(label: string): void;
+export declare function loadConfig(config: Object): void;
 /**
  * 获取一份当前配置的复制
  *
@@ -54,5 +39,5 @@ export declare function getGlobalConfig(): {
     isPrototypeOf(v: Object): boolean;
     propertyIsEnumerable(v: string | number | symbol): boolean;
 };
-export declare function setBehaviour(tag: 'autosave', value: boolean): void;
+export declare const getDefaultConfig: (label?: string) => any;
 //# sourceMappingURL=config.d.ts.map
